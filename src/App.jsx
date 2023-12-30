@@ -4,25 +4,34 @@ import Loader from './components/Loader';
 import Main from './components/Main';
 import Error from './components/Error';
 import Start from './components/Start';
+import Progress from './components/Progress';
 const initialState={
   status:"loading",
   questions:[],
-}
+  currentQuestion:0,
+  points:0,
+};
 const reducer=(state,action)=>{
   if(action.type==="dataReceived")
   return{
 ...state,
 status:"ready",
 questions:action.payload}
-if (action.type==="dataFailed")
+else if (action.type==="dataFailed")
 return{
   ...state,
   status:"error",
 }
+else if (action.type==="start")
+return {
+  ...state,
+  status:"start",
+}
 }
 
 const App = () => {
-  const [{status},dispatch]=useReducer(reducer,initialState);
+  const [{status,questions,currentQuestion,points},dispatch]=useReducer(reducer,initialState);
+  const maxPoints=questions.reduce((prev,current)=>prev+current.points,0);
   useEffect(()=>{
     const getQuestions=async()=>{
       try{
@@ -41,9 +50,13 @@ const App = () => {
     <div className='app'>
       <Header/>
       <Main>
-        {status==="ready"&&<Start/>}
+        {status==="ready"&& <Start questions={questions.length} dispatch={dispatch}/>}
         {status==="loading"&&<Loader/>}
         {status==="error"&&<Error/>}
+        {status==="start"&&<>
+        <Progress points={points} questions={questions} currentQuestion={currentQuestion} maxPoints={maxPoints}/>
+        </>
+        }
       </Main>
     </div>
   )
